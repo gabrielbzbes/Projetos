@@ -1,0 +1,199 @@
+import datetime
+
+
+usuarios = []
+contas = []
+
+
+LIMITE_TRANSACOES = 10
+LIMITE_SAQUES = 3
+LIMITE_SAQUE_VALOR = 500
+
+
+
+def cadastrar_usuario(*, nome, data_nascimento, cpf, endereco):
+    cpf_numeros = ''.join(filter(str.isdigit, cpf))
+    for u in usuarios:
+        if u['cpf'] == cpf_numeros:
+            print("Erro! CPF já cadastrado.")
+            return None
+
+    usuario = {
+        "nome": nome,
+        "data_nascimento": data_nascimento,
+        "cpf": cpf_numeros,
+        "endereco": endereco
+    }
+    usuarios.append(usuario)
+    print(f"Usuário {nome} cadastrado com sucesso!")
+    return usuario
+
+
+
+def criar_conta(usuario):
+    if usuario not in usuarios:
+        print("Erro! Usuário não cadastrado.")
+        return None
+
+    numero_conta = len(contas) + 1
+    conta = {
+        "agencia": "0001",
+        "numero_conta": numero_conta,
+        "usuario": usuario,
+        "saldo": 0,
+        "extrato": "",
+        "numero_saques": 0,
+        "transacoes": 0
+    }
+    contas.append(conta)
+    print(f"Conta {numero_conta} criada para o usuário {usuario['nome']} (Agência: {conta['agencia']})")
+    return conta
+
+
+
+def sacar(*, conta, valor):
+    if conta["numero_saques"] >= LIMITE_SAQUES:
+        print("Erro! Número máximo de saques atingido.")
+        return
+    if valor > LIMITE_SAQUE_VALOR:
+        print(f"Erro! Valor do saque excede R$ {LIMITE_SAQUE_VALOR:.2f}.")
+        return
+    if valor > conta["saldo"]:
+        print("Erro! Saldo insuficiente.")
+        return
+    if valor <= 0:
+        print("Valor inválido para saque!")
+        return
+
+    conta["saldo"] -= valor
+    hora = datetime.datetime.now().strftime("%d/%m/%y %H:%M")
+    conta["extrato"] += f"[{hora}] Saque:     R$ {valor:.2f}\n"
+    conta["numero_saques"] += 1
+    conta["transacoes"] += 1
+    print("Saque realizado com sucesso!")
+
+
+
+def depositar(conta, valor):
+    if valor <= 0:
+        print("Valor inválido para depósito!")
+        return
+    if conta["transacoes"] >= LIMITE_TRANSACOES:
+        print("Erro! Você excedeu o limite diário de 10 transações.")
+        return
+
+    conta["saldo"] += valor
+    hora = datetime.datetime.now().strftime("%d/%m/%y %H:%M")
+    conta["extrato"] += f"[{hora}] Depósito: R$ {valor:.2f}\n"
+    conta["transacoes"] += 1
+    print("Depósito realizado com sucesso!")
+
+
+def exibir_extrato(conta, /, *, mostrar_saldo=True):
+    print("\n========= EXTRATO =========")
+    if conta["extrato"]:
+        print(conta["extrato"])
+    else:
+        print("Nenhuma movimentação.")
+    if mostrar_saldo:
+        print(f"\nSaldo: R$ {conta['saldo']:.2f}")
+        print(f"Total de transações hoje: {conta['transacoes']}/{LIMITE_TRANSACOES}")
+    print("===========================\n")
+
+
+def listar_contas(usuario=None):
+    contas_filtradas = contas
+    if usuario:
+        contas_filtradas = [c for c in contas if c["usuario"] == usuario]
+
+    if not contas_filtradas:
+        print("Nenhuma conta encontrada.")
+        return []
+
+    print("\nContas disponíveis:")
+    for c in contas_filtradas:
+        print(f"Agência: {c['agencia']} | Conta: {c['numero_conta']} | Titular: {c['usuario']['nome']}")
+    return contas_filtradas
+
+
+def selecionar_conta():
+    contas_disponiveis = listar_contas()
+    if not contas_disponiveis:
+        return None
+    try:
+        numero = int(input("Informe o número da conta: "))
+    except ValueError:
+        print("Número inválido.")
+        return None
+    conta_encontrada = next((c for c in contas_disponiveis if c["numero_conta"] == numero), None)
+    if not conta_encontrada:
+        print("Conta não encontrada.")
+    return conta_encontrada
+
+
+menu = """
+[1] Cadastrar usuário
+[2] Criar conta corrente
+[3] Depositar
+[4] Sacar
+[5] Extrato
+[6] Listar contas
+[7] Sair
+=> """
+
+while True:
+    opcao = input(menu)
+
+    if opcao == "1":
+        nome = input("Nome: ")
+        data_nascimento = input("Data de nascimento (dd/mm/aaaa): ")
+        cpf = input("CPF: ")
+        endereco = input("Endereço (logradouro, nro - bairro - cidade/sigla estado): ")
+        cadastrar_usuario(nome=nome, data_nascimento=data_nascimento, cpf=cpf, endereco=endereco)
+
+    elif opcao == "2":
+        if not usuarios:
+            print("Erro! Não há usuários cadastrados.")
+            continue
+        print("Selecione o usuário pelo CPF para criar a conta:")
+        cpf_busca = ''.join(filter(str.isdigit, input("CPF: ")))
+        usuario_encontrado = next((u for u in usuarios if u["cpf"] == cpf_busca), None)
+        if usuario_encontrado:
+            criar_conta(usuario_encontrado)
+        else:
+            print("Usuário não encontrado.")
+
+    elif opcao == "3":
+        conta = selecionar_conta()
+        if conta:
+            try:
+                valor = float(input("Valor a depositar: "))
+            except ValueError:
+                print("Valor inválido.")
+                continue
+            depositar(conta, valor)
+
+    elif opcao == "4":
+        conta = selecionar_conta()
+        if conta:
+            try:
+                valor = float(input("Valor a sacar: "))
+            except ValueError:
+                print("Valor inválido.")
+                continue
+            sacar(conta=conta, valor=valor)
+
+    elif opcao == "5":
+        conta = selecionar_conta()
+        if conta:
+            exibir_extrato(conta, mostrar_saldo=True)
+
+    elif opcao == "6":
+        listar_contas()
+
+    elif opcao == "7":
+        print("Encerrando o sistema...")
+        break
+
+    else:
+        print("Opção inválida!")
