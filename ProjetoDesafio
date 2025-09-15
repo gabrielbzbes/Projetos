@@ -1,0 +1,145 @@
+class Cliente:
+    def __init__(self, nome, cpf, idade=None):
+        self.nome = nome
+        self.cpf = cpf
+        self.idade = idade
+
+    def __str__(self):
+        return f"Cliente: {self.nome}, CPF: {self.cpf}, Idade: {self.idade if self.idade else 'N/A'}"
+
+
+class ContaBancaria:
+    LIMITE_SAQUES = 3
+
+    def __init__(self, titular, agencia, limite=500):
+        self.titular = titular
+        self.agencia = agencia
+        self.saldo = 0
+        self.limite = limite
+        self.extrato = ""
+        self.numero_saques = 0
+
+    def depositar(self, valor):
+        if valor > 0:
+            self.saldo += valor
+            self.extrato += f"Depósito: R$ {valor:.2f}\n"
+            print("Valor depositado!")
+        else:
+            print("Valor inválido para depósito!")
+
+    def sacar(self, valor):
+        excedeu_saldo = valor > self.saldo
+        excedeu_limite = valor > self.limite
+        excedeu_saques = self.numero_saques >= self.LIMITE_SAQUES
+
+        if excedeu_saldo:
+            print("Erro! Saldo insuficiente.")
+        elif excedeu_limite:
+            print(f"Erro! O valor do saque não pode exceder R$ {self.limite:.2f}.")
+        elif excedeu_saques:
+            print("Erro! Número máximo de saques atingido.")
+        elif valor > 0:
+            self.saldo -= valor
+            self.extrato += f"Saque:    R$ {valor:.2f}\n"
+            self.numero_saques += 1
+            print("Saque realizado com sucesso!")
+        else:
+            print("Valor inválido para saque!")
+
+    def mostrar_extrato(self):
+        print("\n========= EXTRATO =========")
+        print("Nenhuma movimentação." if not self.extrato else self.extrato)
+        print(f"Saldo: R$ {self.saldo:.2f}")
+        print("===========================")
+
+
+class Banco:
+    def __init__(self):
+        self.contas = []
+
+    def adicionar_conta(self, conta):
+        self.contas.append(conta)
+
+    def buscar_conta(self, cpf, agencia):
+        for conta in self.contas:
+            if conta.titular.cpf == cpf and conta.agencia == agencia:
+                return conta
+        return None
+
+    def listar_contas(self):
+        if not self.contas:
+            print("Nenhuma conta cadastrada.")
+        for conta in self.contas:
+            print(f"Agência: {conta.agencia} | {conta.titular}")
+
+
+banco = Banco()
+
+menu_principal = """
+[1] Cadastrar novo cliente e conta
+[2] Acessar conta
+[3] Listar contas
+[4] Sair
+=> """
+
+menu_conta = """
+[d] Depositar
+[s] Sacar
+[e] Extrato
+[q] Sair da conta
+=> """
+
+while True:
+    opcao = input(menu_principal)
+
+    if opcao == "1":
+        nome = input("Digite o nome do cliente: ")
+        cpf = input("Digite o CPF do cliente: ")
+        idade = input("Digite a idade (opcional): ")
+        agencia = input("Digite o número da agência: ")
+
+        cliente = Cliente(nome, cpf, idade if idade else None)
+        conta = ContaBancaria(cliente, agencia)
+        banco.adicionar_conta(conta)
+
+        print(f"Conta criada com sucesso! {cliente} | Agência: {agencia}\n")
+
+    elif opcao == "2":
+        cpf = input("Digite o CPF do cliente: ")
+        agencia = input("Digite o número da agência: ")
+
+        conta = banco.buscar_conta(cpf, agencia)
+        if not conta:
+            print("Conta não encontrada! Verifique CPF e agência.\n")
+            continue
+
+        while True:
+            opcao_conta = input(menu_conta)
+
+            if opcao_conta == "d":
+                valor = float(input("Qual valor deseja depositar? \n"))
+                conta.depositar(valor)
+
+            elif opcao_conta == "s":
+                valor = float(input("Qual valor deseja sacar? \n"))
+                conta.sacar(valor)
+
+            elif opcao_conta == "e":
+                conta.mostrar_extrato()
+
+            elif opcao_conta == "q":
+                print("Saindo da conta...\n")
+                break
+
+            else:
+                print("Opção inválida!")
+
+    elif opcao == "3":
+        banco.listar_contas()
+
+    elif opcao == "4":
+        print("Encerrando o sistema...")
+        break
+
+    else:
+        print("Opção inválida!")
