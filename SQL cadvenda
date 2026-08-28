@@ -1,0 +1,32 @@
+CREATE TABLE Cliente (tipcliente integer PRIMARY KEY,
+ idencliente varchar(40),
+ cpfcliente varchar(14)
+ );
+
+ CREATE TABLE Venda (tipvenda integer PRIMARY KEY,
+  datavenda DATE,
+  valorvenda DECIMAL(10, 2),
+  tipcliente INTEGER,
+  FOREIGN KEY (tipcliente) REFERENCES Cliente(tipcliente));
+
+INSERT INTO Cliente (tipcliente, idencliente, cpfcliente)
+VALUES (1, 'GABRIEL BZ', '123.456.789-10');
+
+INSERT INTO Cliente (tipcliente, idencliente, cpfcliente)
+VALUES (2, 'anderson lobo', '133.445.743-11');
+
+INSERT INTO Cliente (tipcliente, idencliente, cpfcliente)
+VALUES (3, 'Joao kaka', '133.333.333-33');
+
+INSERT INTO Venda (tipvenda, datavenda, valorvenda, tipcliente)
+VALUES (101, '23-08-2026', 350, 1);
+INSERT INTO Venda (tipvenda, datavenda, valorvenda, tipcliente)
+VALUES (102, '23-08-2026', 550, 2);
+INSERT INTO Venda (tipvenda, datavenda, valorvenda, tipcliente)
+VALUES (103, '23-08-2026', 550, 3);
+
+SELECT * FROM Cliente;
+SELECT * FROM Venda;
+
+  DROP TABLE Venda;
+  DROP TABLE CLiente;
