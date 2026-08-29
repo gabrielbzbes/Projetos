@@ -1,0 +1,227 @@
+CREATE TABLE Clientes (
+    tipcliente INTEGER PRIMARY KEY,
+    endcliente VARCHAR(60),
+    telcliente CHAR(11),
+    emailcliente VARCHAR(50),
+    nomecliente VARCHAR(40),
+    cpfcliente CHAR(14)
+);
+
+CREATE TABLE ANIMAL (
+    tipanimal INTEGER PRIMARY KEY,
+    tipcliente INTEGER,
+    nomeanimal VARCHAR(20),
+    especanimal VARCHAR(20),
+    racaanimal VARCHAR(20),
+    sexoanimal VARCHAR(10),
+    dataanimal DATE,
+    pesoanimal DECIMAL(10,2),
+    FOREIGN KEY (tipcliente) REFERENCES Clientes(tipcliente)
+);
+
+CREATE TABLE veterinario (
+    tipvet INTEGER PRIMARY KEY,
+    vetnome VARCHAR(40),
+    vetcrmv VARCHAR(10),
+    vetespec VARCHAR(25),
+    vettel CHAR(11),
+    vetmail VARCHAR(50)
+);
+
+CREATE TABLE Consulta (
+    tipconsulta INTEGER PRIMARY KEY,
+    tipanimal INTEGER,
+    tipvet INTEGER,
+    dataconsulta DATE,
+    horaconsulta TIME,
+    motivo VARCHAR(100),
+    diagnostico VARCHAR(200),
+    observacoes VARCHAR(300),
+    FOREIGN KEY (tipanimal) REFERENCES Animal(tipanimal),
+    FOREIGN KEY (tipvet) REFERENCES Veterinario(tipvet)
+);
+
+INSERT INTO Clientes (
+    tipcliente,
+    endcliente,
+    telcliente,
+    emailcliente,
+    nomecliente,
+    cpfcliente
+)
+VALUES (
+    1,
+    'Rua C10, lote 22, QD 12',
+    '984125847',
+    'batatinhafrita@gmail.com',
+    'Gabriel Batista',
+    '123.456.789-00'
+),
+(
+    2,
+    'Avenida D, lote 10, QD 62',
+    '985412367',
+    'brocolislutador@gmail.com',
+    'Rezende',
+    '123.556.999-00'
+);
+
+INSERT INTO ANIMAL (
+    tipanimal,
+    tipcliente,
+    nomeanimal,
+    especanimal,
+    racaanimal,
+    sexoanimal,
+    dataanimal,
+    pesoanimal
+)
+VALUES (
+    1,
+    1,
+    'Rex',
+    'CANINO',
+    'Pastor Alemão',
+    'Macho',
+    '2020-05-10',
+    30.5
+),
+(
+    2,
+    1,
+    'Bob',
+    'FELINO',
+    'SRD',
+    'Macho',
+    '2021-08-20',
+    4.7
+),
+(
+    3,
+    2,
+    'Mel',
+    'CANINO',
+    'Golden Retriever',
+    'Fêmea',
+    '2022-03-15',
+    25.3
+);
+
+INSERT INTO VETERINARIO (
+    tipvet,
+    vetnome,
+    vetcrmv,
+    vetespec,
+    vettel,
+    vetmail
+)
+VALUES (
+    1,
+    'Dr. Gabriel Rezende',
+    'CRMV12345',
+    'Clinico Geral',
+    '62991234567',
+    'carlos@gmail.com'
+),
+(
+    2,
+    'Dra. Bruna Curado',
+    'CRMV67890',
+    'Hematologista',
+    '62998765432',
+    'ana@gmail.com'
+);
+
+INSERT INTO Consulta (
+    tipconsulta,
+    tipanimal,
+    tipvet,
+    dataconsulta,
+    horaconsulta,
+    motivo,
+    diagnostico,
+    observacoes
+)
+VALUES (
+    1,
+    1,
+    1,
+    '2026-08-29',
+    '14:30',
+    'Animal com falta de apetite',
+    'Gastrite',
+    'Recomendado acompanhamento e alimentacao leve'
+),
+(
+    2,
+    2,
+    2,
+    '2026-08-30',
+    '10:00',
+    'Animal com anemia',
+    'AHIM',
+    'Imunossupressor'
+),
+(
+    3,
+    3,
+    1,
+    '2026-08-31',
+    '15:00',
+    'Animal com diarreira sanguinolenta',
+    'Parvovirose',
+    'Recomenda-se internação, quadro grave'
+);
+
+SELECT * FROM Clientes;
+
+SELECT * FROM Animal;
+
+SELECT * FROM Veterinario;
+
+SELECT * FROM Consulta;
+
+SELECT
+    Clientes.nomecliente,
+    Animal.nomeanimal
+FROM Clientes, Animal
+WHERE Clientes.tipcliente = Animal.tipcliente;
+
+SELECT
+    Clientes.nomecliente,
+    Animal.nomeanimal,
+    Consulta.dataconsulta,
+    Consulta.horaconsulta,
+    Consulta.motivo,
+    Consulta.diagnostico
+FROM Clientes, Animal, Consulta
+WHERE Clientes.tipcliente = Animal.tipcliente
+AND Animal.tipanimal = Consulta.tipanimal;
+
+SELECT
+    Animal.nomeanimal,
+    Veterinario.vetnome,
+    Consulta.dataconsulta,
+    Consulta.horaconsulta,
+    Consulta.motivo,
+    Consulta.diagnostico
+FROM Animal, Veterinario, Consulta
+WHERE Animal.tipanimal = Consulta.tipanimal
+AND Veterinario.tipvet = Consulta.tipvet;
+
+SELECT
+    Clientes.nomecliente,
+    Animal.nomeanimal,
+    Animal.especanimal,
+    Animal.racaanimal,
+    Veterinario.vetnome,
+    Veterinario.vetespec,
+    Consulta.dataconsulta,
+    Consulta.horaconsulta,
+    Consulta.motivo,
+    Consulta.diagnostico,
+    Consulta.observacoes
+FROM Clientes, Animal, Veterinario, Consulta
+WHERE Clientes.tipcliente = Animal.tipcliente
+AND Animal.tipanimal = Consulta.tipanimal
+AND Veterinario.tipvet = Consulta.tipvet;
